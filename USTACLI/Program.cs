@@ -9,6 +9,7 @@ public class Program
   {
     // Parse command line arguments
     var app = new CommandApp();
+
     app.Configure(config =>
     {
       config.AddBranch<RankingsSettings>("rankings", rankings =>
@@ -18,6 +19,12 @@ public class Program
         rankings.AddCommand<SubscribeRankingsCommand>("subscribe");
         rankings.AddCommand<UnsubscribeRankingsCommand>("unsubscribe");
       });
+
+      config.AddBranch<ResultsSettings>("results", results =>
+      {
+        results.AddCommand<GetResultsCommand>("get");
+      });
+
       config.AddBranch("subscribers", subscribers =>
       {
         subscribers.AddCommand<ListSubscribersCommand>("list");

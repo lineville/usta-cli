@@ -71,6 +71,19 @@ public class Utilities
     }
   }
 
+  /// <summary>
+  /// Interactive prompts to fill in missing CLI settings
+  /// <summary>
+  public static void InteractiveFallback(ResultsSettings settings, IConfiguration configuration, string context)
+  {
+    if (settings.USTANumber == null) 
+    {
+      var UstaNumber = AnsiConsole.Prompt(
+        new TextPrompt<string>("What's your [aqua]USTA number[/]?"));
+      settings.USTANumber = UstaNumber;
+    }
+  }
+
 
   /// <summary>
   /// Construct the correct URL from CLI args
