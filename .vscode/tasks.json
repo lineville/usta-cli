@@ -36,54 +36,6 @@
         "${workspaceFolder}/USTACLI/usta-cli.csproj"
       ],
       "problemMatcher": "$msCompile"
-    },
-    {
-      "type": "docker-build",
-      "label": "docker-build: debug",
-      "dependsOn": ["build"],
-      "dockerBuild": {
-        "tag": "usta-cli:dev",
-        "target": "base",
-        "dockerfile": "${workspaceFolder}/Dockerfile",
-        "context": "${workspaceFolder}/USTACLI",
-        "pull": true
-      },
-      "netCore": {
-        "appProject": "${workspaceFolder}/USTACLI/usta-cli.csproj"
-      }
-    },
-    {
-      "type": "docker-build",
-      "label": "docker-build: release",
-      "dependsOn": ["build"],
-      "dockerBuild": {
-        "tag": "usta-cli:latest",
-        "dockerfile": "${workspaceFolder}/Dockerfile",
-        "context": "${workspaceFolder}/USTACLI",
-        "pull": true
-      },
-      "netCore": {
-        "appProject": "${workspaceFolder}/USTACLI/usta-cli.csproj"
-      }
-    },
-    {
-      "type": "docker-run",
-      "label": "docker-run: debug",
-      "dependsOn": ["docker-build: debug"],
-      "dockerRun": {},
-      "netCore": {
-        "appProject": "${workspaceFolder}/USTACLI/usta-cli.csproj",
-        "enableDebugging": true
-      }
-    },
-    {
-      "type": "docker-run",
-      "label": "docker-run: release",
-      "dependsOn": ["docker-build: release"],
-      "dockerRun": {},
-      "netCore": {
-        "appProject": "${workspaceFolder}/USTACLI/usta-cli.csproj"
-      }
     }
   ]
 }

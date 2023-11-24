@@ -1,206 +1,70 @@
 # USTA CLI 🎾
 
-## [![🚀 Release](https://github.com/lineville/usta-cli/actions/workflows/release.yml/badge.svg)](https://github.com/lineville/usta-cli/actions/workflows/release.yml) [![🧪 CI](https://github.com/lineville/usta-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/lineville/usta-cli/actions/workflows/ci.yml) [![🏆 Update Rank](https://github.com/lineville/usta-cli/actions/workflows/update_rank.yml/badge.svg)](https://github.com/lineville/usta-cli/actions/workflows/update_rank.yml)
+## [![🚀 Release](https://github.com/lineville/usta-cli/actions/workflows/release.yml/badge.svg)](https://github.com/lineville/usta-cli/actions/workflows/release.yml) [![🧪 CI](https://github.com/lineville/usta-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/lineville/usta-cli/actions/workflows/ci.yml) [![🏆 Check Ranking](https://github.com/lineville/usta-cli/actions/workflows/check_rank.yml/badge.svg)](https://github.com/lineville/usta-cli/actions/workflows/check_rank.yml) ![Nuget](https://img.shields.io/nuget/v/usta-cli)
 
-Command Line Tool to scrape the USTA rankings page to get a player's current ranking and send scheduled email updates when new rankings are posted
+Command Line Tool to view current USTA Tennis rankings for a particular player, or view the current standings by section and NTRP level. This tool is completely free ❤️‍🩹 and distributed via the [nuget package manager](https://www.nuget.org/packages/usta-cli). This tool would not be possible without relying on the work done by [Selenium](https://github.com/SeleniumHQ/selenium) and the [USTA](https://usta.com).
+
+## Requirements
+
+Install [dotnet](https://dotnet.microsoft.com/en-us/download)
 
 ## Usage
 
-- Install [docker](https://docs.docker.com/get-docker/) or open in a GitHub CodeSpace 🚀
-
 ```console
-docker run -it ghcr.io/lineville/usta-cli <command> [options]
+dotnet tool install --global usta-cli
+usta-cli <command> [options]
 ```
 
 ## Commands
 
-### `rankings list [options]`
+### `get [options]`
 
-Lists the top 20 ranked players in a given section, format, and level
+Gets a player's current ranking
 
-> All of the options listed below are optional (**not required**), if any of these are not provided it will give you an interactive prompt to select the options. If you wish to skip the interactive prompt or run this from an automated context, you must provide all of the options listed below.
-
-- `--format` or `-f` - The match format
-  - SINGLES
-  - DOUBLES
-- `--gender` or `-g` - The player's listed gender
-  - M
-  - F
-- `--level` or `-l` - The NTRP level
-
-  - 3.0
-  - 3.5
-  - 4.0
-  - 4.5
-  - 5.0
-
-- `--section` or `-s` - The USTA section
-
-  - Eastern
-  - Florida
-  - Hawaii Pacific
-  - Intermountain
-  - Mid-Atlantic
-  - Middle States
-  - Midwest
-  - Missouri Valley
-  - New England
-  - Northern California
-  - Northern
-  - Pacific NW
-  - Southern
-  - Southern California
-  - Southwest
-  - Texas
-  - Unassigned
-
-#### Example `rankings list` Output
-
-![0B48D7E0-4D69-46D6-AB35-E3456F46A793](https://user-images.githubusercontent.com/25349044/215961392-42bc161d-9342-4e8c-a727-72b86db979bf.jpeg)
+- `-n | --name ['FIRST LAST']`
+- `-f | --format [SINGLES|DOUBLES]`
+- `-g | --gender [M|F]`
+- `-l | --level [3.0|3.5|4.0|4.5|5.0]`
+- `-s | --section [Eastern|Florida|Hawaii Pacific|Intermountain|Mid-Atlantic|Middle States|Midwest|Missouri Valley|New England|Northern California|Northern|Pacific NW|Southern|Southern California|Southwest|Texas|Unassigned]`
+- `-o | --output [html|json]`
 
 ---
 
-### `rankings get [options]`
+### `list [options]`
 
-Gets the ranking of a single player in a given section, format, and level
+Lists the top players in a given section and level
 
-> All of the options listed below are optional (**not required**), if any of these are not provided it will give you an interactive prompt to select the options. If you wish to skip the interactive prompt or run this from an automated context, you must provide all of the options listed below.
+- `-f | --format [SINGLES|DOUBLES]`
+- `-g | --gender [M|F]`
+- `-l | --level [3.0|3.5|4.0|4.5|5.0]`
+- `-s | --section [Eastern|Florida|Hawaii Pacific|Intermountain|Mid-Atlantic|Middle States|Midwest|Missouri Valley|New England|Northern California|Northern|Pacific NW|Southern|Southern California|Southwest|Texas|Unassigned]`
+- `-o | --output [html|json]`
+- `-t | --top [20|50|100]`
 
-- `--name` or `-n` - The player's full name
-- `--format` or `-f` - The match format
-  - SINGLES
-  - DOUBLES
-- `--gender` or `-g` - The player's listed gender
-  - M
-  - F
-- `--level` or `-l` - The NTRP level
-  - 3.0
-  - 3.5
-  - 4.0
-  - 4.5
-  - 5.0
-- `--section` or `-s` - The USTA section
+---
 
-  - Eastern
-  - Florida
-  - Hawaii Pacific
-  - Intermountain
-  - Mid-Atlantic
-  - Middle States
-  - Midwest
-  - Missouri Valley
-  - New England
-  - Northern California
-  - Northern
-  - Pacific NW
-  - Southern
-  - Southern California
-  - Southwest
-  - Texas
-  - Unassigned
+### `subscribe [options]`
 
-- (Optional) `--output` or `-o` - Defaults to markdown, options include
-  - html
-  - json
+Subscribes to weekly email updates for a player's rankings
 
-#### Example `rankings get` Output
+- `-n | --name ['FIRST LAST']`
+- `-f | --format [SINGLES|DOUBLES]`
+- `-g | --gender [M|F]`
+- `-l | --level [3.0|3.5|4.0|4.5|5.0]`
+- `-s | --section [Eastern|Florida|Hawaii Pacific|Intermountain|Mid-Atlantic|Middle States|Midwest|Missouri Valley|New England|Northern California|Northern|Pacific NW|Southern|Southern California|Southwest|Texas|Unassigned]`
+- `-o | --output [html|json]`
+- `-e | --email ['youremail@mail.com']`
 
-```markdown
-## Liam Neville
+---
 
-### Northern California Men's 4.0 singles
+### `unsubscribe [options]`
 
-- National Rank: 349
-- Section Rank: 16
-- District Rank: 16
-```
+Unsubscribes to weekly email updates for a player's rankings
 
-### `rankings subscribe [options]`
-
-Subscribes to a player's rankings updates and sends a weekly email when new rankings are posted
-
-> All of the options listed below are optional (**not required**), if any of these are not provided it will give you an interactive prompt to select the options. If you wish to skip the interactive prompt or run this from an automated context, you must provide all of the options listed below.
-
-- `--name` or `-n` - The player's full name
-- `--format` or `-f` - The match format
-  - SINGLES
-  - DOUBLES
-- `--gender` or `-g` - The player's listed gender
-  - M
-  - F
-- `--level` or `-l` - The NTRP level
-  - 3.0
-  - 3.5
-  - 4.0
-  - 4.5
-  - 5.0
-- `--section` or `-s` - The USTA section
-
-  - Eastern
-  - Florida
-  - Hawaii Pacific
-  - Intermountain
-  - Mid-Atlantic
-  - Middle States
-  - Midwest
-  - Missouri Valley
-  - New England
-  - Northern California
-  - Northern
-  - Pacific NW
-  - Southern
-  - Southern California
-  - Southwest
-  - Texas
-  - Unassigned
-
-#### Example `rankings subscribe` Output
-
-```console
-Successfully subscribed to rankings updates for Liam Neville, level 4.0, section Northern California, format SINGLES
-```
-
-### `rankings unsubscribe [options]`
-
-Unsubscribes from a player's rankings updates
-
-> All of the options listed below are optional (**not required**), if any of these are not provided it will give you an interactive prompt to select the options. If you wish to skip the interactive prompt or run this from an automated context, you must provide all of the options listed below.
-
-- `--name` or `-n` - The player's full name
-- `--format` or `-f` - The match format
-  - SINGLES
-  - DOUBLES
-- `--gender` or `-g` - The player's listed gender
-  - M
-  - F
-- `--level` or `-l` - The NTRP level
-  - 3.0
-  - 3.5
-  - 4.0
-  - 4.5
-  - 5.0
-- `--section` or `-s` - The USTA section
-
-  - Eastern
-  - Florida
-  - Hawaii Pacific
-  - Intermountain
-  - Mid-Atlantic
-  - Middle States
-  - Midwest
-  - Missouri Valley
-  - New England
-  - Northern California
-  - Northern
-  - Pacific NW
-  - Southern
-  - Southern California
-  - Southwest
-  - Texas
-  - Unassigned
-
-#### Example `rankings unsubscribe` Output
-
-```console
-Successfully unsubscribed to rankings updates for Liam Neville, level 4.0, section Northern California, format SINGLES
-```
+- `-n | --name ['FIRST LAST']`
+- `-f | --format [SINGLES|DOUBLES]`
+- `-g | --gender [M|F]`
+- `-l | --level [3.0|3.5|4.0|4.5|5.0]`
+- `-s | --section [Eastern|Florida|Hawaii Pacific|Intermountain|Mid-Atlantic|Middle States|Midwest|Missouri Valley|New England|Northern California|Northern|Pacific NW|Southern|Southern California|Southwest|Texas|Unassigned]`
+- `-o | --output [html|json]`
+- `-e | --email ['youremail@mail.com']`

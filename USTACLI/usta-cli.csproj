@@ -6,20 +6,26 @@
     <RootNamespace>usta_cli</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>usta-cli</ToolCommandName>
+    <PackageOutputPath>./nupkg</PackageOutputPath>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageVersion>2.1.2</PackageVersion>
+    <RepositoryUrl>https://github.com/lineville/usta-cli</RepositoryUrl> 
+    <RepositoryType>git</RepositoryType> 
   </PropertyGroup>
 
   <ItemGroup>
-    <None Update="appsettings.json">
+    <None Include="appsettings.json" Pack="true">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="../README.md" Pack="true" PackagePath=""/>
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="7.0.0" />
     <PackageReference Include="MongoDB.Driver" Version="2.19.0" />
-    <PackageReference Include="Selenium.Support" Version="4.5.0" />
-    <PackageReference Include="Selenium.WebDriver" Version="4.5.0" />
-    <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="109.0.5414.7400" />
+    <PackageReference Include="Selenium.WebDriver" Version="4.14.0" />
     <PackageReference Include="Spectre.Console" Version="0.46.0" />
     <PackageReference Include="Spectre.Console.Cli" Version="0.46.0" />
     <PackageReference Include="Spectre.Console.Json" Version="0.46.0" />

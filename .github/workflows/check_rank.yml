@@ -1,8 +1,8 @@
-name: 🏆 Update Rank
+name: 🏆 Check Rank
 
 on:
   schedule:
-    - cron: "40 11 * * 3" # Every Wednesday at 03:40 UTC
+    - cron: "40 14 * * 3" # Every Wednesday at 03:40 UTC
   workflow_dispatch:
     inputs:
       name:
@@ -59,14 +59,14 @@ on:
           - "Texas"
           - "Unassigned"
         required: true
-        default: "Northern California"
+        default: "New England"
 
 env:
   NAME: Liam Neville
   FORMAT: SINGLES
   GENDER: M
   LEVEL: "4.0"
-  SECTION: Northern California
+  SECTION: New England
 
 jobs:
   get_subscriber_details:
@@ -90,7 +90,7 @@ jobs:
         env:
           MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
         run: |
-          echo "subscribers=$(dotnet run subscribers list)" >> $GITHUB_OUTPUT
+          echo "subscribers=$(dotnet run subscribers)" >> $GITHUB_OUTPUT
 
   run_and_send_emails:
     needs: get_subscriber_details
@@ -104,27 +104,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - uses: satackey/action-docker-layer-caching@v0.0.11
-        continue-on-error: true
-
-      - name: Build
-        working-directory: ${{ github.workspace }}
-        run: docker build -t usta-cli .
-
       # Manual Trigger should just use the inputs not the list of subscribers
       - if: ${{ github.event_name == 'workflow_dispatch' }}
         name: Run Manual
+        working-directory: ${{ github.workspace }}/USTACLI
         run: |
           echo 'EMAIL_BODY<<EOF' >> $GITHUB_ENV
-          docker run usta-cli rankings get -n '${{ inputs.Name || env.NAME }}' -f '${{ inputs.Format || env.FORMAT }}' -g '${{ inputs.Gender || env.GENDER }}' -l '${{ inputs.Level || env.LEVEL }}' -s '${{ inputs.Section || env.SECTION }}' -o html >> $GITHUB_ENV
+          dotnet run -- get -n '${{ inputs.Name || env.NAME }}' -f '${{ inputs.Format || env.FORMAT }}' -g '${{ inputs.Gender || env.GENDER }}' -l '${{ inputs.Level || env.LEVEL }}' -s '${{ inputs.Section || env.SECTION }}' -o html >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
 
       # Scheduled Trigger should use the list of subscribers from the database
       - if: ${{ github.event_name == 'schedule' }}
         name: Run Scheduled
+        working-directory: ${{ github.workspace }}/USTACLI
         run: |
           echo 'EMAIL_BODY<<EOF' >> $GITHUB_ENV
-          docker run usta-cli rankings get -n '${{ matrix.subscribers.name }}' -f '${{ matrix.subscribers.format }}' -g '${{ matrix.subscribers.gender }}' -l '${{ matrix.subscribers.level }}' -s '${{ matrix.subscribers.section }}' -o html >> $GITHUB_ENV
+          dotnet run -- get -n '${{ matrix.subscribers.name }}' -f '${{ matrix.subscribers.format }}' -g '${{ matrix.subscribers.gender }}' -l '${{ matrix.subscribers.level }}' -s '${{ matrix.subscribers.section }}' -o html >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
 
       - name: Summary

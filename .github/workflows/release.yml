@@ -4,12 +4,8 @@ on:
   release:
     types: [published]
 
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
-
 jobs:
-  build-and-push-image:
+  release:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -24,29 +20,27 @@ jobs:
         with:
           dotnet-version: 7.0.x
 
+      - name: 🔏 Configure Secrets
+        uses: microsoft/variable-substitution@v1 
+        with:
+          files: '**/appsettings.json'
+        env:
+          MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
+      
       - name: 🧪 Test
+        env:
+          MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
         run: |
           dotnet test
 
-      - name: Log in to the Container registry
-        uses: docker/login-action@v2
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: 📦 Build
+        working-directory: ./USTACLI
+        run: dotnet pack -c Release
 
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@v4
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+      - name: 🚀 Publish to Nuget
+        working-directory: ./USTACLI
+        run: dotnet nuget push ./nupkg/*.nupkg -n -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v3
-        with:
-          context: .
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          build-args: |
-            "MONGO_PASSWORD=${{ secrets.MONGO_PASSWORD }}"
+      - name: 🚀 Publish to GitHub
+        working-directory: ./USTACLI
+        run: dotnet nuget push ./nupkg/*.nupkg -n -k ${{ secrets.GITHUB_TOKEN }} -s https://nuget.pkg.github.com/lineville/index.json

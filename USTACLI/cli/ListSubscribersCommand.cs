@@ -9,18 +9,15 @@ public class ListSubscribersCommand : Command
   public override int Execute(CommandContext context)
   {
 #nullable enable
-    // Load appsettings.json static data
-    IConfiguration configuration = new ConfigurationBuilder()
-      .SetBasePath(Directory.GetCurrentDirectory())
-      .AddJsonFile("appsettings.json", optional: false)
-      .AddEnvironmentVariables()
-      .Build();
+    var configuration = context.Data as IConfiguration
+      ?? throw new Exception("Failed to load configuration from appsettings.json");
 
-    GetSubscribers(configuration).GetAwaiter().GetResult();
+    var subscribers = GetSubscribers(configuration).GetAwaiter().GetResult();
+    Console.WriteLine(JsonConvert.SerializeObject(subscribers, Formatting.None));
     return 0;
   }
 
-  public async Task GetSubscribers(IConfiguration configuration)
+  public async Task<List<RankingsSettings>> GetSubscribers(IConfiguration configuration)
   {
     var connection = MongoClientSettings.FromConnectionString($"mongodb+srv://admin:{configuration["MONGO_PASSWORD"]}@prod.gngcbq9.mongodb.net/?retryWrites=true&w=majority");
     connection.ServerApi = new ServerApi(ServerApiVersion.V1);
@@ -31,8 +28,6 @@ public class ListSubscribersCommand : Command
 
     var filter = Builders<RankingsSettings>.Filter.Empty;
 
-    var docs = await subscribers.Find(filter).ToListAsync();
-
-    Console.WriteLine(JsonConvert.SerializeObject(docs, Formatting.None));
+    return await subscribers.Find(filter).ToListAsync();
   }
 }

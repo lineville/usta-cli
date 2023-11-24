@@ -6,15 +6,12 @@ using OpenQA.Selenium.Support.UI;
 
 public class GetRankingsCommand : Command<RankingsSettings>
 {
-  #nullable disable
+#nullable disable
   public override int Execute(CommandContext context, RankingsSettings settings)
   {
-  #nullable enable
-    // Load appsettings.json static data
-    IConfiguration configuration = new ConfigurationBuilder()
-      .SetBasePath(Directory.GetCurrentDirectory())
-      .AddJsonFile("appsettings.json", optional: false)
-      .Build();
+#nullable enable
+    var configuration = context.Data as IConfiguration
+      ?? throw new Exception("Failed to load configuration from appsettings.json");
 
     Utilities.InteractiveFallback(settings, configuration, context.Name);
 
@@ -41,6 +38,8 @@ public class GetRankingsCommand : Command<RankingsSettings>
           }
           catch (Exception)
           {
+            Console.WriteLine($"Failed to find ranking for {settings.Name} in {settings.Section}. Searching for ranking in any section.");
+            settings.Section = null;
             retries++;
           }
           finally
@@ -67,7 +66,7 @@ public class GetRankingsCommand : Command<RankingsSettings>
   /// <summary>
   /// Extracts the HTML element and returns a Player object
   /// </summary>
-  public static RankingsReport ScrapePlayerRanking(WebDriver driver, IConfiguration configuration, RankingsSettings settings, string context)
+  public RankingsReport ScrapePlayerRanking(WebDriver driver, IConfiguration configuration, RankingsSettings settings, string context)
   {
     var htmlElement = configuration.GetValue<string>("HTML_ELEMENT_TARGET")
       ?? throw new Exception("Failed to load HTML_ELEMENT_TARGET from appsettings.json");
@@ -75,13 +74,16 @@ public class GetRankingsCommand : Command<RankingsSettings>
     var timeout = configuration.GetValue<int>("PAGE_LOAD_TIMEOUT");
 
     var url = Utilities.BuildUSTARankingURL(settings, configuration, context);
-    
     // Navigate to the URL and wait for the page to load
     driver.Navigate().GoToUrl(url);
-    var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(timeout));
-    wait.Until(d => d.FindElement(By.ClassName(htmlElement)));
+
+    // Extra delay to allow the page to reload after name is searched
+    Thread.Sleep(timeout * 1000);
 
     var elements = driver.FindElements(By.ClassName(htmlElement));
+
+    var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(timeout));
+    wait.Until(d => d.FindElement(By.ClassName(htmlElement)));
 
     if (elements[3].Text != settings.Name) // Throw if the name doesn't match
     {

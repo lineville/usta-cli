@@ -8,10 +8,17 @@
       "preLaunchTask": "build",
       "program": "${workspaceFolder}/USTACLI/bin/Debug/net7.0/usta-cli.dll",
       "args": [
-        "results",
-        "get",
-        "-u",
-        "2005791848"
+        "list",
+        "--format",
+        "SINGLES",
+        "--gender",
+        "M",
+        "--level",
+        "4.5",
+        "--section",
+        "New England",
+        "--top",
+        "30"
       ],
       "cwd": "${workspaceFolder}",
       "console": "internalConsole",
@@ -21,15 +28,6 @@
       "name": ".NET Core Attach",
       "type": "coreclr",
       "request": "attach"
-    },
-    {
-      "name": "Docker .NET Core Launch",
-      "type": "docker",
-      "request": "launch",
-      "preLaunchTask": "docker-run: debug",
-      "netCore": {
-        "appProject": "${workspaceFolder}/USTACLI/usta-cli.csproj"
-      }
     }
   ]
 }

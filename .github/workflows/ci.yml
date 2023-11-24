@@ -1,8 +1,27 @@
 name: 🧪 CI
 
-on: push
+on:
+  workflow_dispatch:
+
+  pull_request:
+    branches:
+      - main
+      
+  push:
+    branches:
+      - main
+
+env:
+  NAME: Liam Neville
+  FORMAT: SINGLES
+  GENDER: M
+  LEVEL: "4.0"
+  SECTION: New England
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
+  # Unit tests
   test:
     runs-on: ubuntu-latest
     steps:
@@ -15,5 +34,7 @@ jobs:
           dotnet-version: 7.0.x
 
       - name: 🧪 Test
+        env:
+          MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
         run: |
           dotnet test

@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
 using Spectre.Console;
 
-public class Utilities
+public static class Utilities
 {
 
   /// <summary>
@@ -13,7 +13,7 @@ public class Utilities
     if (settings.Name == null && context != "list") 
     {
       var name = AnsiConsole.Prompt(
-        new TextPrompt<string>("What's your [aqua]name[/]?"));
+        new TextPrompt<string>("Player name [aqua]name[/]:"));
       settings.Name = name;
     }
 
@@ -66,8 +66,15 @@ public class Utilities
     if (settings.Email == null && (context == "subscribe" || context == "unsubscribe"))
     {
       var email = AnsiConsole.Prompt(
-        new TextPrompt<string>("What's your [aqua]email[/]?"));
+        new TextPrompt<string>("[aqua]Email[/]:"));
       settings.Email = email;
+    }
+
+    if (settings.Top == null && context == "list")
+    {
+      var top = AnsiConsole.Prompt(
+        new TextPrompt<int>("[aqua]Top N players[/]:"));
+      settings.Top = top;
     }
   }
 
@@ -88,7 +95,7 @@ public class Utilities
   /// <summary>
   /// Construct the correct URL from CLI args
   /// </summary>
-  public static string BuildUSTARankingURL(RankingsSettings settings, IConfiguration configuration, string context)
+  public static string BuildUSTARankingURL(RankingsSettings settings, IConfiguration configuration, string context, int? pageNumber = 1)
   {
     var queryKeys = configuration.GetRequiredSection("QUERY_PARAMS").Get<Dictionary<string, string>>() ?? throw new Exception("Failed to load QUERY_PARAMS from appsettings.json");
     var sectionCodes = configuration.GetRequiredSection("SECTION_CODES").Get<Dictionary<string, string>>() ?? throw new Exception("Failed to load SECTION_CODES from appsettings.json");
@@ -99,9 +106,13 @@ public class Utilities
     {
       { queryKeys["Format"], settings.Format?.ToString() ?? ""},
       { queryKeys["Gender"], settings.Gender?.ToString() ?? ""},
-      { queryKeys["Level"], "level_" + settings.Level?.ToString().Replace(".", "_")},
-      { queryKeys["Section"], sectionCodes[settings.Section ?? ""] }
+      { queryKeys["Level"], "level_" + settings.Level?.ToString().Replace(".", "_")}
     };
+
+    if (settings.Section != null)
+    {
+      queryParams.Add(queryKeys["Section"], sectionCodes[settings.Section]);
+    }
 
     if (context == "get")
     {
@@ -111,7 +122,7 @@ public class Utilities
     var url = QueryHelpers.AddQueryString(ustaBaseURL, queryParams);
 
     // Workaround for weird # getting ignored in QueryHelpers
-    url = url.Insert(ustaBaseURL.Count(), "#") + "#tab=ntrp";
+    url = url.Insert(ustaBaseURL.Count(), "#") + "#tab=ntrp&ntrp-page=" + pageNumber;
     return url;
   }
 
