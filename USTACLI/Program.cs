@@ -27,6 +27,7 @@ public class Program
       config.AddCommand<ListRankingsCommand>("list").WithDescription("List player rankings").WithData(configuration);
       config.AddCommand<SubscribeRankingsCommand>("subscribe").WithDescription("Subscribe to player rankings").WithData(configuration);
       config.AddCommand<UnsubscribeRankingsCommand>("unsubscribe").WithDescription("Unsubscribe from player rankings").WithData(configuration);
+      config.AddCommand<GetResultsCommand>("results").WithDescription("Get player results").WithData(configuration);
 
       // Hidden command used by GH actions (not intended for end user usage)
       config.AddCommand<ListSubscribersCommand>("subscribers").WithData(configuration).IsHidden();

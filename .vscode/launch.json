@@ -8,19 +8,11 @@
       "preLaunchTask": "build",
       "program": "${workspaceFolder}/USTACLI/bin/Debug/net7.0/usta-cli.dll",
       "args": [
-        "list",
-        "--format",
-        "SINGLES",
-        "--gender",
-        "M",
-        "--level",
-        "4.5",
-        "--section",
-        "New England",
-        "--top",
-        "30"
+        "results",
+        "-u",
+        "2005791848"
       ],
-      "cwd": "${workspaceFolder}",
+      "cwd": "${workspaceFolder}/USTACLI",
       "console": "internalConsole",
       "stopAtEntry": false
     },

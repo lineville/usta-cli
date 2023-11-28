@@ -32,7 +32,7 @@ public record RankingsReport
 
   public void Print()
   {
-    switch (this.Settings?.Output)
+    switch (Settings?.Output)
     {
       case Output.json:
         AnsiConsole.Write(new JsonText(ToJSON()));
