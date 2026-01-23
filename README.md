@@ -43,6 +43,15 @@ Lists the top players in a given section and level
 
 ---
 
+### `results [options]`
+
+Lists the results of a player's matches. Your USTA number can be found by visiting [your USTA profile](https://www.usta.com/en/home/myaccount/player.html#tab1=about)
+
+- `-u | --usta-number [2005791848]`
+- `-o | --output [html|json]`
+
+---
+
 ### `subscribe [options]`
 
 Subscribes to weekly email updates for a player's rankings

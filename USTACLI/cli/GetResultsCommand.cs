@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Support.UI;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
@@ -9,10 +10,6 @@ public class GetResultsCommand : Command<ResultsSettings>
   public override int Execute(CommandContext context, ResultsSettings settings)
   {
 #nullable enable
-
-    //  TODO provide an option to just pass in a name not a USTA number
-    // this means needing to navigate to the player search, and click search and find them this way...
-    // ----------------------------
 
     // Load appsettings.json static data
     IConfiguration configuration = new ConfigurationBuilder()
@@ -25,7 +22,7 @@ public class GetResultsCommand : Command<ResultsSettings>
     var maxRetries = configuration.GetValue<int>("MAX_RETRIES");
     var retries = 0;
     Panel? overview = null;
-    // string? results = null;
+    Panel? results = null;
 
     AnsiConsole
     .Status()
@@ -42,9 +39,30 @@ public class GetResultsCommand : Command<ResultsSettings>
           {
             // Scrape the player ranking
             overview = ScrapePlayerOverview(driver, configuration, settings);
-            // results = ScrapePlayerResults(driver, configuration, settings);
           }
-          catch (Exception)
+          catch (Exception ex)
+          {
+            retries++;
+          }
+          finally
+          {
+            driver.Quit();
+          }
+        }
+      }
+
+      retries = 0;
+      while (retries < maxRetries && results == null)
+      {
+        // Create the chrome driver service
+        using (var driver = Driver.Create())
+        {
+          try
+          {
+            // Scrape the player ranking
+            results = ScrapePlayerResults(driver, configuration, settings);
+          }
+          catch (Exception ex)
           {
             retries++;
           }
@@ -56,7 +74,7 @@ public class GetResultsCommand : Command<ResultsSettings>
       }
     });
 
-    if (overview == null)
+    if (overview == null || results == null)
     {
       throw new Exception($"Failed to find results for {settings.USTANumber}");
     }
@@ -65,8 +83,8 @@ public class GetResultsCommand : Command<ResultsSettings>
 
       AnsiConsole.Clear();
       AnsiConsole.Write(overview);
+      AnsiConsole.Write(results);
     }
-    // AnsiConsole.Write(results);
 
     return 0;
   }
@@ -131,7 +149,7 @@ public class GetResultsCommand : Command<ResultsSettings>
 
     var panel = new Panel(grid)
     {
-      Header = new PanelHeader($"  {playerName} Overview  ").Centered(),
+      Header = new PanelHeader($"{playerName} Overview").Centered(),
       Border = BoxBorder.Heavy,
       BorderStyle = Style.Parse("cyan"),
     };
@@ -140,7 +158,7 @@ public class GetResultsCommand : Command<ResultsSettings>
   }
 
 
-  public static string ScrapePlayerResults(IWebDriver driver, IConfiguration configuration, ResultsSettings settings)
+  public static Panel ScrapePlayerResults(IWebDriver driver, IConfiguration configuration, ResultsSettings settings)
   {
     var url = configuration.GetValue<string>("PLAYER_SEARCH_URL")?.Replace("<USTA_NUMBER>", settings.USTANumber);
     driver.Navigate().GoToUrl(url);
@@ -151,9 +169,13 @@ public class GetResultsCommand : Command<ResultsSettings>
     // Click the link and navigate to the "results" tab
     driver.Navigate().GoToUrl(link);
 
+    Thread.Sleep(1000);
+
     // Find the element that is a link with the text "results" and click it
     var resultsLink = driver.FindElement(By.ClassName("results-tab"));
     resultsLink.Click();
+
+    Thread.Sleep(1000);
 
     // Find and click the element that says "show more" until it does not exist
     var showMore = driver.FindElement(By.XPath(".//button[.='SHOW MORE']"));
@@ -161,6 +183,8 @@ public class GetResultsCommand : Command<ResultsSettings>
     while (showMore != null)
     {
       showMore.Click();
+      Thread.Sleep(1000);
+
       try
       {
         showMore = driver.FindElement(By.XPath(".//button[.='SHOW MORE']"));
@@ -179,12 +203,39 @@ public class GetResultsCommand : Command<ResultsSettings>
 
     var tournaments = allTournamentsContainer.FindElements(By.ClassName("profile-styles_matchResultContainer__cLFWI"));
 
-    AnsiConsole.WriteLine($"Found {tournaments.Count} tournaments");
+    var grid = new Grid().AddColumns(new GridColumn(), new GridColumn());
+
+    foreach (var tournament in tournaments)
+    {
+      var tournamentName = tournament.FindElement(By.XPath(".//article/h5/span")).Text;
+      var tournamentDate = tournament.FindElement(By.ClassName("profile-styles_matchResultsTournamentDate__2njIn")).Text;
+
+      var tournamentResults = tournament.FindElement(By.ClassName("profile-styles_cardContainer__2grpO")).FindElements(By.TagName("li"));
+
+      foreach (var match in tournamentResults)
+      {
+        var player = match.FindElements(By.ClassName("matchCardPlayer_fullname__2iFgh"))[0].Text;
+        var opponent = match.FindElements(By.ClassName("matchCardPlayer_fullname__2iFgh"))[1].Text;
+
+        var matchStatus = match.FindElement(By.ClassName("matchCard_matchStatus__20xdp"));
+        var victory = matchStatus.FindElements(By.XPath(".//p/svg")) != null;
+
+        grid.AddRow(new Text[] { new Text(player, new Style(victory ? Color.Green : Color.Red)).LeftJustified(), new Text(opponent, new Style(victory ? Color.Green : Color.Red)).RightJustified() });
+      }
+
+    }
 
     // TODO figure out how to best display the results
 
     // TODO go to the Overview tab and scrape other info there use panels and charts to replicate this
 
-    return "";
+    var panel = new Panel(grid)
+    {
+      Header = new PanelHeader($"Match Results").Centered(),
+      Border = BoxBorder.Heavy,
+      BorderStyle = Style.Parse("cyan"),
+    };
+
+    return panel;
   }
 }
